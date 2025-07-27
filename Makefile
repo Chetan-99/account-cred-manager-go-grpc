@@ -1,4 +1,4 @@
-.PHONY: build proto run clean test clean-db run-db-mode
+.PHONY: init build proto run clean test clean-db run-db-mode
 
 APP_NAME = account-cred-manager-go-grpc
 APP_DB_PATH = ./badger.db
@@ -6,6 +6,16 @@ SERVER_PATH = ./cmd/server
 PROTO_DIR = ./api/proto
 PROTO_OUTPUT_DIR = ./api/proto/v1
 BUILD_DIR = ./build
+
+init:
+	@echo "Checking for required Go tools..."
+	@command -v go >/dev/null 2>&1 || { echo >&2 "Go is not installed. Aborting."; exit 1; }
+	@command -v protoc >/dev/null 2>&1 || { echo >&2 "protoc is not installed. Aborting."; exit 1; }
+	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	@command -v protoc-gen-go >/dev/null 2>&1 || { echo >&2 "protoc-gen-go is not installed. Aborting."; exit 1; }
+	@command -v protoc-gen-go-grpc >/dev/null 2>&1 || { echo >&2 "protoc-gen-go-grpc is not installed. Aborting."; exit 1; }
+	@echo "All required Go tools are installed."
 
 build: proto
 	@echo "Building $(APP_NAME)"

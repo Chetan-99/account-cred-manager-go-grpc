@@ -27,6 +27,7 @@ The gRPC service and message definitions are located in [`./api/proto/v1/account
 
 1. **Install dependencies**
     ```sh
+    make init
     make build
     ```
 
