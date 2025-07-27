@@ -1,12 +1,7 @@
-.PHONY: build run clean
-.PHONY: build run clean test
-
-test:
-	@echo "Running test"
-	go clean --testcache
-	go test ./test -v
+.PHONY: build run clean test clean-db
 
 APP_NAME = account-cred-manager-go-grpc
+APP_DB_PATH = ./badger.db
 SERVER_PATH = ./cmd/server
 PROTO_DIR = ./api/proto
 PROTO_OUTPUT_DIR = ./api/proto/v1
@@ -27,6 +22,15 @@ proto:
 run: build
 	@echo "Running $(APP_NAME)"
 	@GRPC_PORT="50051" $(BUILD_DIR)/$(APP_NAME)
+
+test:
+	@echo "Running test"
+	go clean --testcache
+	go test ./test/ -v
+
+clean-db:
+	@echo "Cleaning DB"
+	rm -rf $(APP_DB_PATH)
 
 clean:
 	@echo "Cleaning up"

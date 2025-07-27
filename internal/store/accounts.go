@@ -6,14 +6,18 @@ import (
 )
 
 type AccountsStore struct {
-	accounts map[int32]account
+	accounts map[int32]Account
 	mu       sync.RWMutex
 }
 
 func NewAccountStore() *AccountsStore {
 	return &AccountsStore{
-		accounts: make(map[int32]account),
+		accounts: make(map[int32]Account),
 	}
+}
+
+func (a *AccountsStore) GetAccounts() (*map[int32]Account, error) {
+	return &a.accounts, nil
 }
 
 func (a *AccountsStore) CreateAccount(account_id int32) (string, error) {
@@ -23,8 +27,8 @@ func (a *AccountsStore) CreateAccount(account_id int32) (string, error) {
 	if _, ok := a.accounts[account_id]; ok {
 		return "", errors.New("ALREADY_EXIST")
 	} else {
-		a.accounts[account_id] = *newAccount(account_id)
-		return a.accounts[account_id].session_token, nil
+		a.accounts[account_id] = *NewAccount(account_id)
+		return a.accounts[account_id].SessionToken, nil
 	}
 }
 

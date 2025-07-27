@@ -1,6 +1,8 @@
 package store
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"math/rand"
 	"time"
@@ -10,21 +12,31 @@ const (
 	SESSION_TOKEN_EXPIRY_SECONDS = 60 * 9
 )
 
-type account struct {
-	account_id int32
+type Account struct {
+	AccountId int32
 
-	session_token            string
-	created_session_token_ts time.Time
+	SessionToken          string
+	CreatedSessionTokenTS time.Time
 }
 
-func newAccount(account_id int32) *account {
+func NewAccount(account_id int32) *Account {
 	token, created_ts := createToken()
 
-	return &account{
-		account_id:               account_id,
-		session_token:            token,
-		created_session_token_ts: created_ts,
+	return &Account{
+		AccountId:             account_id,
+		SessionToken:          token,
+		CreatedSessionTokenTS: created_ts,
 	}
+}
+
+func AccountDecode(data []byte) (*Account, error) {
+	var ta Account
+	account_buf := bytes.NewBuffer(data)
+	decoder := gob.NewDecoder(account_buf)
+	if err := decoder.Decode(&ta); err != nil {
+		return &Account{}, fmt.Errorf("failed to decode account - error - %+v", err)
+	}
+	return &ta, nil
 }
 
 func createToken() (string, time.Time) {
@@ -34,22 +46,39 @@ func createToken() (string, time.Time) {
 	return token, time.Now()
 }
 
-func (a *account) IsTokenExpired() bool {
-	elapsed := time.Since(a.created_session_token_ts).Seconds()
+func (a *Account) Print() {
+	println("account_id = %d", a.AccountId)
+	println("session_token = %s", a.SessionToken)
+	println("created ts = %s", a.CreatedSessionTokenTS.String())
+}
+
+func (a *Account) IsTokenExpired() bool {
+	elapsed := time.Since(a.CreatedSessionTokenTS).Seconds()
 	return elapsed > SESSION_TOKEN_EXPIRY_SECONDS
 }
 
-func (a *account) RegenerateToken() string {
+func (a *Account) RegenerateToken() string {
 	token, created_ts := createToken()
-	a.session_token = token
-	a.created_session_token_ts = created_ts
+	a.SessionToken = token
+	a.CreatedSessionTokenTS = created_ts
 	return token
 }
 
-func (a *account) GetToken() string {
+func (a *Account) GetToken() string {
 	if a.IsTokenExpired() {
 		return a.RegenerateToken()
 	} else {
-		return a.session_token
+		return a.SessionToken
 	}
+}
+
+func (a *Account) Encode() ([]byte, error) {
+	var buf bytes.Buffer
+	encoder := gob.NewEncoder(&buf)
+	err := encoder.Encode(*a)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return buf.Bytes(), nil
 }

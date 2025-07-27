@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package v1;
 
+import "google/protobuf/empty.proto"; 
+
 option go_package = "github.com/chetan-99/account-cred-manager-go-grpc/api/proto/v1";
 
 service Account {
@@ -16,6 +18,9 @@ service Account {
 
     // Re-generate the temporary token for account
     rpc RegenerateToken (AccountInputRequest) returns (TokenResponse);
+
+    // Return All the Account Id's
+    rpc GetAllAccounts (google.protobuf.Empty) returns (AccountListResponse);
 }
 
 message AccountInputRequest {
@@ -33,4 +38,8 @@ message IsTokenExpiredResponse {
 
 message TokenResponse {
     string session_token = 1;
+}
+
+message AccountListResponse {
+    repeated int32 account_ids = 1;
 }
