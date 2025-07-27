@@ -2,9 +2,6 @@
 
 This project provides a gRPC-based account credential management service implemented in Go.
 
-## Features
-
-
 ## Service Overview
 
 This project provides two backend implementations for account management:
@@ -37,6 +34,7 @@ The gRPC service and message definitions are located in [`./api/proto/v1/account
     ```sh
     make run
     ```
+    Note : By Default, the grpc service starts with In-Memory mode of service, to start the service with Database mode => `STORAGE_MODE=DB make run`
 
 ## Usage
 
