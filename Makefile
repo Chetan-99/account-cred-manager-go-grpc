@@ -1,0 +1,35 @@
+.PHONY: build run clean
+.PHONY: build run clean test
+
+test:
+	@echo "Running test"
+	go clean --testcache
+	go test ./test -v
+
+APP_NAME = account-cred-manager-go-grpc
+SERVER_PATH = ./cmd/server
+PROTO_DIR = ./api/proto
+PROTO_OUTPUT_DIR = ./api/proto/v1
+BUILD_DIR = ./build
+
+build: proto
+	@echo "Building $(APP_NAME)"
+	@go build -o $(BUILD_DIR)/$(APP_NAME) $(SERVER_PATH)
+
+proto:
+	@echo "Generating proto code"
+	@mkdir -p ${PROTO_OUTPUT_DIR}
+	protoc --proto_path=$(PROTO_DIR)/v1 \
+		   --go_out=$(PROTO_OUTPUT_DIR) --go_opt=paths=source_relative \
+		   --go-grpc_out=$(PROTO_OUTPUT_DIR) --go-grpc_opt=paths=source_relative \
+		   $(PROTO_DIR)/v1/*.proto
+
+run: build
+	@echo "Running $(APP_NAME)"
+	@GRPC_PORT="50051" $(BUILD_DIR)/$(APP_NAME)
+
+clean:
+	@echo "Cleaning up"
+	rm -rf $(BUILD_DIR)
+	rm $(PROTO_OUTPUT_DIR)/*.pb.go
+	go clean ./...

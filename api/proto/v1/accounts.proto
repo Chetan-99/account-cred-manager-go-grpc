@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package v1;
+
+option go_package = "github.com/chetan-99/account-cred-manager-go-grpc/api/proto/v1";
+
+service Account {
+    // Initialize account to this service and create temporary token
+    rpc CreateAccount (AccountInputRequest) returns (CreateAccountResponse);
+
+    // Get temporary Token for account
+    rpc GetToken (AccountInputRequest) returns (TokenResponse);
+
+    // Check if temporary token is expired for account
+    rpc IsTokenExpired (AccountInputRequest) returns (IsTokenExpiredResponse);
+
+    // Re-generate the temporary token for account
+    rpc RegenerateToken (AccountInputRequest) returns (TokenResponse);
+}
+
+message AccountInputRequest {
+    int32 account_id = 1;
+}
+
+message CreateAccountResponse {
+    int32 account_id = 1;
+    string session_token = 2;
+}
+
+message IsTokenExpiredResponse {
+    bool expired = 1;
+}
+
+message TokenResponse {
+    string session_token = 1;
+}
