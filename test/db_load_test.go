@@ -11,8 +11,6 @@ import (
 
 var testDb *store.DbHandler
 
-var testAccountIdsData []int32
-
 func TestMain(m *testing.M) {
 
 	// Pre-test steps
