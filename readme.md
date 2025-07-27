@@ -34,7 +34,7 @@ The gRPC service and message definitions are located in [`./api/proto/v1/account
     ```sh
     make run
     ```
-    Note : By Default, the grpc service starts with In-Memory mode of service, to start the service with Database mode => `STORAGE_MODE=DB make run`
+    Note : By Default, the grpc service starts with In-Memory mode of service, to start the service with Database mode => `make run-db-mode`
 
 ## Usage
 

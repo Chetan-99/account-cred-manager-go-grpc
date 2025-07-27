@@ -1,4 +1,4 @@
-.PHONY: build run clean test clean-db
+.PHONY: build proto run clean test clean-db run-db-mode
 
 APP_NAME = account-cred-manager-go-grpc
 APP_DB_PATH = ./badger.db
@@ -20,8 +20,12 @@ proto:
 		   $(PROTO_DIR)/v1/*.proto
 
 run: build
-	@echo "Running $(APP_NAME)"
+	@echo "Running $(APP_NAME) in Memory mode"
 	@GRPC_PORT="50051" $(BUILD_DIR)/$(APP_NAME)
+
+run-db-mode: build
+	@echo "Running $(APP_NAME) in DB mode"
+	@GRPC_PORT="50051" STORAGE_MODE=DB $(BUILD_DIR)/$(APP_NAME)
 
 test:
 	@echo "Running test"
