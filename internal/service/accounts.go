@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	pb "github.com/chetan-99/account-cred-manager-go-grpc/api/proto/v1"
+	"github.com/chetan-99/account-cred-manager-go-grpc/internal/config"
 	"github.com/chetan-99/account-cred-manager-go-grpc/internal/store"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,10 +18,13 @@ type AccountsServiceDB struct {
 	db *store.DbHandler
 }
 
-func NewAccountsServiceDB(db *store.DbHandler) *AccountsServiceDB {
+func NewAccountsServiceDB(cfg *config.AppConfig) (*AccountsServiceDB, func() error) {
+	db := store.NewBadgerDB(cfg)
 	return &AccountsServiceDB{
-		db: db,
-	}
+			db: db,
+		}, func() error {
+			return db.Close()
+		}
 }
 
 func (p *AccountsServiceDB) CreateAccount(ctx context.Context, in *pb.AccountInputRequest) (*pb.CreateAccountResponse, error) {
@@ -116,9 +120,10 @@ type AccountsServiceMem struct {
 	mu             sync.RWMutex
 }
 
-func NewAccountsServiceMem(s *store.AccountsStore) *AccountsServiceMem {
+func NewAccountsServiceMem() *AccountsServiceMem {
+	mem_store := store.NewAccountStore()
 	return &AccountsServiceMem{
-		accounts_store: s,
+		accounts_store: mem_store,
 	}
 }
 

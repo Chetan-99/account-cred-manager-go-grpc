@@ -1,17 +1,23 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/chetan-99/account-cred-manager-go-grpc/internal/config"
 	"github.com/chetan-99/account-cred-manager-go-grpc/internal/service"
-	"github.com/chetan-99/account-cred-manager-go-grpc/internal/store"
 
 	pb "github.com/chetan-99/account-cred-manager-go-grpc/api/proto/v1"
 )
 
 func main() {
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -19,20 +25,26 @@ func main() {
 	}
 
 	var accountServer pb.AccountServer
+	var closeDB func() error
+
 	if cfg.STORAGE_MODE == "MEM" {
 		fmt.Printf("Starting service as MEM mode\n")
-		mem_store := store.NewAccountStore()
-		accountServer = service.NewAccountsServiceMem(mem_store)
+		accountServer = service.NewAccountsServiceMem()
 	} else {
 		fmt.Printf("Starting service as DB mode\n")
-		db := store.NewBadgerDB(cfg)
-		defer db.Close()
-		accountServer = service.NewAccountsServiceDB(db)
+		accountServer, closeDB = service.NewAccountsServiceDB(cfg)
 	}
 
 	g := NewGrpcServer(cfg)
 
 	pb.RegisterAccountServer(g.server, accountServer)
 
-	g.Start()
+	go func() {
+		g.Start()
+	}()
+
+	<-ctx.Done()
+	fmt.Println("\nShutting down Application")
+	g.server.GracefulStop()
+	closeDB()
 }

@@ -16,7 +16,7 @@ type DbHandler struct {
 }
 
 func NewBadgerDB(cfg *config.AppConfig) *DbHandler {
-	bdb, err := badger.Open(badger.DefaultOptions(cfg.DB_PATH))
+	bdb, err := badger.Open(badger.DefaultOptions(cfg.DB_PATH).WithLogger(nil))
 	if err != nil {
 		log.Fatalf("Failed to initialize badger db - err - %v", err)
 	}
