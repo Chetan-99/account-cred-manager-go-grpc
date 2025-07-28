@@ -25,17 +25,19 @@ func main() {
 	}
 
 	var accountServer pb.AccountServer
-	var closeDB func() error
 
 	if cfg.STORAGE_MODE == "MEM" {
 		fmt.Printf("Starting service as MEM mode\n")
 		accountServer = service.NewAccountsServiceMem()
 	} else {
 		fmt.Printf("Starting service as DB mode\n")
+		var closeDB func() error
 		accountServer, closeDB = service.NewAccountsServiceDB(cfg)
+		defer closeDB()
 	}
 
 	g := NewGrpcServer(cfg)
+	defer g.server.GracefulStop()
 
 	pb.RegisterAccountServer(g.server, accountServer)
 
@@ -45,6 +47,4 @@ func main() {
 
 	<-ctx.Done()
 	fmt.Println("\nShutting down Application")
-	g.server.GracefulStop()
-	closeDB()
 }
